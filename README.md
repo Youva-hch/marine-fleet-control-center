@@ -4,7 +4,7 @@ Technical assessment project for replaying and analysing the historical operatio
 
 ## Status
 
-Project definition and architecture phase. No application code has been written yet.
+Data audit and architecture phase. The technical stack and initial database model have been selected. No application code has been written yet.
 
 ## Expected scope
 
@@ -22,6 +22,14 @@ Project definition and architecture phase. No application code has been written 
 - `data/`: documentation about the supplied datasets.
 - `data/raw/`: local source datasets, intentionally excluded from Git.
 
+## Selected stack
+
+- React, TypeScript and Vite
+- MapLibre GL JS and D3.js
+- Node.js with a REST API
+- PostgreSQL with PostGIS; TimescaleDB remains an optional extension
+- Docker Compose, Vitest and GitHub Actions
+
 ## Data
 
 The source archive is kept outside this repository. See `data/README.md` before importing it locally.
@@ -29,4 +37,3 @@ The source archive is kept outside this repository. See `data/README.md` before 
 ## Important date
 
 Submission deadline: 18 September 2026 at 18:00. The source document does not specify a time zone.
-
