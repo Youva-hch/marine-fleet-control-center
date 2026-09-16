@@ -168,4 +168,19 @@ describe('metadata API', () => {
     });
     expect(response.json().features.length).toBeGreaterThan(0);
   });
+
+  it('returns raw time series for selected vessels and variables', async () => {
+    const response = await app.inject({
+      method: 'GET',
+      url: '/api/v1/time-series?vessels=IMO1&variables=sogKnots,rollMotionDeg&from=2026-03-01T00:15:00Z&to=2026-03-01T03:00:00Z&resolution=raw',
+    });
+    expect(response.statusCode).toBe(200);
+    expect(response.json()).toMatchObject({
+      metadata: { resolution: 'raw', gapThresholdMinutes: 30 },
+      data: [
+        { vesselId: 'IMO1', variable: 'sogKnots', unit: 'kn' },
+        { vesselId: 'IMO1', variable: 'rollMotionDeg', unit: 'deg' },
+      ],
+    });
+  });
 });

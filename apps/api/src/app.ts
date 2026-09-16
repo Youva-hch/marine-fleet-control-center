@@ -1,6 +1,7 @@
 import Fastify from 'fastify';
 
 import { database } from './db/client.js';
+import { registerTimeSeriesRoutes } from './modules/time-series/routes.js';
 import { registerTrajectoryRoutes } from './modules/trajectories/routes.js';
 import { registerVariableRoutes } from './modules/variables/routes.js';
 
@@ -66,6 +67,7 @@ export function buildApp() {
 
   registerVariableRoutes(app);
   registerTrajectoryRoutes(app);
+  registerTimeSeriesRoutes(app);
 
   app.addHook('onClose', async () => {
     await database.end();
