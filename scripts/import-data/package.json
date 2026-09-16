@@ -1,0 +1,19 @@
+{
+  "name": "@fleet-control/import-data",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "import": "tsx src/index.ts",
+    "typecheck": "tsc -p tsconfig.json --noEmit --pretty false",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "csv-parse": "^6.1.0",
+    "pg": "^8.16.3"
+  },
+  "devDependencies": {
+    "@types/pg": "^8.15.5",
+    "tsx": "^4.23.1"
+  }
+}

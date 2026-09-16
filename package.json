@@ -12,11 +12,12 @@
     "db:down": "docker compose down",
     "db:logs": "docker compose logs db",
     "db:verify": "docker compose exec -T db psql -U fleet -d fleet_control -f /database/verify.sql",
+    "data:import": "pnpm --filter @fleet-control/import-data run import",
     "build": "pnpm -r --if-present build",
     "typecheck": "pnpm -r --if-present typecheck",
     "lint": "eslint .",
-    "format": "prettier --write apps packages package.json pnpm-workspace.yaml tsconfig.base.json eslint.config.mjs docker-compose.yml",
-    "format:check": "prettier --check apps packages package.json pnpm-workspace.yaml tsconfig.base.json eslint.config.mjs docker-compose.yml",
+    "format": "prettier --write apps packages scripts package.json pnpm-workspace.yaml tsconfig.base.json eslint.config.mjs docker-compose.yml",
+    "format:check": "prettier --check apps packages scripts package.json pnpm-workspace.yaml tsconfig.base.json eslint.config.mjs docker-compose.yml",
     "test": "pnpm -r --if-present test"
   },
   "devDependencies": {

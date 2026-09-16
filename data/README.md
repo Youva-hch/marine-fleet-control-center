@@ -21,4 +21,10 @@ The observed period is 1 March 2026 at 00:15 through 1 August 2026 at 23:45. Thi
 
 Raw data belongs in `data/raw/` for local analysis. That directory is excluded from Git until data-sharing and repository-size decisions have been made explicitly.
 
-The initial audit read directly from the supplied ZIP. The raw CSV files have not been copied into the repository.
+The import command reads the six files from this directory:
+
+```bash
+pnpm data:import
+```
+
+The importer assumes source timestamps are UTC, preserves missing values as `NULL`, records quality flags and can be rerun without creating duplicates.
