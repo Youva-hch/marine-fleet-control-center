@@ -12,9 +12,11 @@
   },
   "dependencies": {
     "@fleet-control/contracts": "workspace:*",
-    "fastify": "^5.12.5"
+    "fastify": "^5.12.5",
+    "pg": "^8.23.0"
   },
   "devDependencies": {
+    "@types/pg": "^8.23.1",
     "tsx": "^4.23.13"
   }
 }
