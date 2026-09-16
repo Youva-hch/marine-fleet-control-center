@@ -1,0 +1,29 @@
+# Local environment and secrets
+.env
+.env.*
+!.env.example
+
+# Dependencies and generated applications
+node_modules/
+.next/
+dist/
+build/
+coverage/
+
+# Local datasets
+data/raw/
+*.zip
+
+# Operating system metadata
+.DS_Store
+__MACOSX/
+
+# Codex working directories
+tmp/
+work/
+outputs/
+
+# Editors
+.idea/
+.vscode/
+
