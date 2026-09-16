@@ -43,6 +43,7 @@ Requirements: Node.js 22 or newer and pnpm 10.30.2.
 
 ```bash
 pnpm install
+pnpm db:up
 pnpm dev
 ```
 
@@ -56,6 +57,7 @@ pnpm lint
 pnpm typecheck
 pnpm test
 pnpm build
+pnpm db:verify
 ```
 
 ## Data

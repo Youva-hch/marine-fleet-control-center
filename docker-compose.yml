@@ -1,0 +1,26 @@
+services:
+  db:
+    image: postgis/postgis:16-3.4
+    environment:
+      POSTGRES_DB: fleet_control
+      POSTGRES_USER: fleet
+      POSTGRES_PASSWORD: fleet
+    ports:
+      - '5432:5432'
+    volumes:
+      - fleet-postgres-data:/var/lib/postgresql/data
+      - ./database:/database:ro
+      - ./database/migrations:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test:
+        [
+          'CMD-SHELL',
+          "psql -U fleet -d fleet_control -tAc 'SELECT count(*) = 3 FROM vessels' | grep -qx t",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+
+volumes:
+  fleet-postgres-data:
