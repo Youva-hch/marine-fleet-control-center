@@ -32,6 +32,8 @@ Data audit and architecture phase. The technical stack and initial database mode
 
 The API request and response formats are defined in `docs/api-contract.md` before implementation.
 
+The intended repository structure and commit sequence are defined in `docs/project-plan.md`.
+
 ## Data
 
 The source archive is kept outside this repository. See `data/README.md` before importing it locally.
