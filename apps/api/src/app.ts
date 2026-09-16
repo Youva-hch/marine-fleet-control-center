@@ -1,6 +1,7 @@
 import Fastify from 'fastify';
 
 import { database } from './db/client.js';
+import { registerTrajectoryRoutes } from './modules/trajectories/routes.js';
 import { registerVariableRoutes } from './modules/variables/routes.js';
 
 export function buildApp() {
@@ -64,6 +65,7 @@ export function buildApp() {
   });
 
   registerVariableRoutes(app);
+  registerTrajectoryRoutes(app);
 
   app.addHook('onClose', async () => {
     await database.end();

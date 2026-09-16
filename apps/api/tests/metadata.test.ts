@@ -97,4 +97,75 @@ describe('metadata API', () => {
       ]),
     );
   });
+
+  it('rejects a trajectory request without required parameters', async () => {
+    const response = await app.inject({
+      method: 'GET',
+      url: '/api/v1/trajectories',
+    });
+
+    expect(response.statusCode).toBe(400);
+  });
+
+  it.each([
+    [
+      'an unknown vessel',
+      'vessels=UNKNOWN&from=2026-03-01T00:15:00Z&to=2026-03-02T00:15:00Z',
+      422,
+    ],
+    [
+      'a duplicate vessel',
+      'vessels=IMO1,IMO1&from=2026-03-01T00:15:00Z&to=2026-03-02T00:15:00Z',
+      400,
+    ],
+    [
+      'a malformed date',
+      'vessels=IMO1&from=tomorrow&to=2026-03-02T00:15:00Z',
+      400,
+    ],
+    [
+      'an inverted date range',
+      'vessels=IMO1&from=2026-03-02T00:15:00Z&to=2026-03-01T00:15:00Z',
+      400,
+    ],
+    [
+      'a range over 31 days',
+      'vessels=IMO1&from=2026-03-01T00:15:00Z&to=2026-04-02T00:15:00Z',
+      422,
+    ],
+    [
+      'an unsupported variable',
+      'vessels=IMO1&from=2026-03-01T00:15:00Z&to=2026-03-02T00:15:00Z&colourBy=unknown',
+      422,
+    ],
+  ])('rejects %s', async (_label, query, expectedStatus) => {
+    const response = await app.inject({
+      method: 'GET',
+      url: `/api/v1/trajectories?${query}`,
+    });
+
+    expect(response.statusCode).toBe(expectedStatus);
+    expect(response.headers['content-type']).toContain(
+      'application/problem+json',
+    );
+  });
+
+  it('returns a GeoJSON trajectory for a valid request', async () => {
+    const response = await app.inject({
+      method: 'GET',
+      url: '/api/v1/trajectories?vessels=IMO1&from=2026-03-01T00:15:00Z&to=2026-03-01T03:00:00Z&colourBy=sogKnots',
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(response.headers['content-type']).toContain('application/geo+json');
+    expect(response.json()).toMatchObject({
+      type: 'FeatureCollection',
+      metadata: {
+        colourBy: 'sogKnots',
+        gapThresholdMinutes: 30,
+        downsampled: false,
+      },
+    });
+    expect(response.json().features.length).toBeGreaterThan(0);
+  });
 });
