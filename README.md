@@ -30,6 +30,8 @@ Data audit and architecture phase. The technical stack and initial database mode
 - PostgreSQL with PostGIS; TimescaleDB remains an optional extension
 - Docker Compose, Vitest and GitHub Actions
 
+The API request and response formats are defined in `docs/api-contract.md` before implementation.
+
 ## Data
 
 The source archive is kept outside this repository. See `data/README.md` before importing it locally.
