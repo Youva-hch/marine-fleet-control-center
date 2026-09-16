@@ -5,10 +5,12 @@
 
 # Dependencies and generated applications
 node_modules/
+.pnpm-store/
 .next/
 dist/
 build/
 coverage/
+*.tsbuildinfo
 
 # Local datasets
 data/raw/
@@ -26,4 +28,3 @@ outputs/
 # Editors
 .idea/
 .vscode/
-

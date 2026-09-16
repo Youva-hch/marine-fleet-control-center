@@ -1,0 +1,8 @@
+dist
+coverage
+node_modules
+data/raw
+outputs
+tmp
+work
+pnpm-lock.yaml

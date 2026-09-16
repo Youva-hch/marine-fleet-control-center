@@ -4,7 +4,7 @@ Technical assessment project for replaying and analysing the historical operatio
 
 ## Status
 
-Data audit and architecture phase. The technical stack and initial database model have been selected. No application code has been written yet.
+The architecture and API contract are documented. The repository now contains the initial web, API and shared-contract workspaces; product features and data ingestion have not started yet.
 
 ## Expected scope
 
@@ -18,6 +18,9 @@ Data audit and architecture phase. The technical stack and initial database mode
 
 ## Repository structure
 
+- `apps/web/`: React and Vite frontend.
+- `apps/api/`: Fastify API.
+- `packages/contracts/`: shared API contracts.
 - `docs/`: requirements, assumptions and future architecture decisions.
 - `data/`: documentation about the supplied datasets.
 - `data/raw/`: local source datasets, intentionally excluded from Git.
@@ -33,6 +36,27 @@ Data audit and architecture phase. The technical stack and initial database mode
 The API request and response formats are defined in `docs/api-contract.md` before implementation.
 
 The intended repository structure and commit sequence are defined in `docs/project-plan.md`.
+
+## Local development
+
+Requirements: Node.js 22 or newer and pnpm 10.30.2.
+
+```bash
+pnpm install
+pnpm dev
+```
+
+The web application runs on `http://localhost:5173` and the API on `http://localhost:3000` by default.
+
+Quality checks:
+
+```bash
+pnpm format:check
+pnpm lint
+pnpm typecheck
+pnpm test
+pnpm build
+```
 
 ## Data
 

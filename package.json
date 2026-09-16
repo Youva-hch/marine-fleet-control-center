@@ -1,0 +1,29 @@
+{
+  "name": "marine-fleet-control-center",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@10.30.2",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "pnpm --parallel --filter @fleet-control/api --filter @fleet-control/web dev",
+    "build": "pnpm -r --if-present build",
+    "typecheck": "pnpm -r --if-present typecheck",
+    "lint": "eslint .",
+    "format": "prettier --write apps packages package.json pnpm-workspace.yaml tsconfig.base.json eslint.config.mjs",
+    "format:check": "prettier --check apps packages package.json pnpm-workspace.yaml tsconfig.base.json eslint.config.mjs",
+    "test": "pnpm -r --if-present test"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.5",
+    "@types/node": "^24.13.5",
+    "eslint": "^9.39.5",
+    "eslint-config-prettier": "^10",
+    "globals": "^16.5.0",
+    "prettier": "^3",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8",
+    "vitest": "^3.2.7"
+  }
+}

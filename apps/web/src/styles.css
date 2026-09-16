@@ -1,0 +1,37 @@
+:root {
+  color: #f5f7fa;
+  background: #08131d;
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+.workspace-placeholder {
+  display: grid;
+  min-height: 100vh;
+  place-content: center;
+  padding: 2rem;
+  text-align: center;
+}
+
+.workspace-placeholder h1 {
+  margin: 0;
+  font-size: clamp(2.25rem, 7vw, 5rem);
+  letter-spacing: -0.05em;
+}
+.workspace-placeholder p {
+  color: #a7bac8;
+}
+.workspace-placeholder .eyebrow {
+  margin-bottom: 0.75rem;
+  color: #65c7f7;
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
