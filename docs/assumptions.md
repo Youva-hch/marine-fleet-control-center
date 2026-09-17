@@ -17,7 +17,7 @@ This document records ambiguities from the assessment before implementation deci
 
 ## Decisions made
 
-- The application uses React, TypeScript and Vite with MapLibre GL JS and selective D3.js visualisations.
+- The application uses React, TypeScript and Vite with MapLibre GL JS and native SVG telemetry charts.
 - The backend uses Node.js, TypeScript and a REST API.
 - PostgreSQL with PostGIS is the primary database. TimescaleDB is an optional scaling extension.
 - Missing numeric measurements remain `NULL`; they are not converted to zero.

@@ -74,13 +74,13 @@ The client uses this response for the vessel selector and date limits.
 
 `GET /api/v1/trajectories`
 
-| Parameter | Required | Example | Rule |
-| --- | --- | --- | --- |
-| `vessels` | Yes | `IMO1,IMO2` | One to three unique vessel IDs |
-| `from` | Yes | `2026-03-01T00:15:00Z` | Inclusive UTC timestamp |
-| `to` | Yes | `2026-03-07T23:45:00Z` | Inclusive UTC timestamp after `from` |
-| `colourBy` | No | `sogKnots` | Defaults to `sogKnots` |
-| `maxPoints` | No | `5000` | Deterministic rendering limit per vessel |
+| Parameter   | Required | Example                | Rule                                     |
+| ----------- | -------- | ---------------------- | ---------------------------------------- |
+| `vessels`   | Yes      | `IMO1,IMO2`            | One to three unique vessel IDs           |
+| `from`      | Yes      | `2026-03-01T00:15:00Z` | Inclusive UTC timestamp                  |
+| `to`        | Yes      | `2026-03-07T23:45:00Z` | Inclusive UTC timestamp after `from`     |
+| `colourBy`  | No       | `sogKnots`             | Defaults to `sogKnots`                   |
+| `maxPoints` | No       | `5000`                 | Deterministic rendering limit per vessel |
 
 Response content type: `application/geo+json`.
 
@@ -101,10 +101,7 @@ Response content type: `application/geo+json`.
       "properties": {
         "vesselId": "IMO1",
         "segmentIndex": 0,
-        "timestamps": [
-          "2026-03-01T00:15:00Z",
-          "2026-03-01T00:30:00Z"
-        ],
+        "timestamps": ["2026-03-01T00:15:00Z", "2026-03-01T00:30:00Z"],
         "values": [0.58933783, 1.55398405],
         "variable": "sogKnots",
         "unit": "kn",
@@ -128,13 +125,13 @@ The server returns separate line features when the interval between observations
 
 `GET /api/v1/time-series`
 
-| Parameter | Required | Example | Rule |
-| --- | --- | --- | --- |
-| `vessels` | Yes | `IMO1,IMO2` | One to three unique vessel IDs |
-| `variables` | Yes | `sogKnots,rollMotionDeg` | One to five supported variables |
-| `from` | Yes | `2026-03-01T00:15:00Z` | Inclusive UTC timestamp |
-| `to` | Yes | `2026-03-07T23:45:00Z` | Inclusive UTC timestamp after `from` |
-| `resolution` | No | `auto` | `raw`, `1h`, `6h`, `1d` or `auto` |
+| Parameter    | Required | Example                  | Rule                                 |
+| ------------ | -------- | ------------------------ | ------------------------------------ |
+| `vessels`    | Yes      | `IMO1,IMO2`              | One to three unique vessel IDs       |
+| `variables`  | Yes      | `sogKnots,rollMotionDeg` | One to five supported variables      |
+| `from`       | Yes      | `2026-03-01T00:15:00Z`   | Inclusive UTC timestamp              |
+| `to`         | Yes      | `2026-03-07T23:45:00Z`   | Inclusive UTC timestamp after `from` |
+| `resolution` | No       | `auto`                   | `raw`, `1h`, `6h`, `1d` or `auto`    |
 
 ```json
 {
@@ -163,7 +160,7 @@ The server returns separate line features when the interval between observations
 
 Aggregated points also contain `minimum`, `maximum` and `sampleCount`. Continuous measurements use an arithmetic mean. Course and heading require a circular mean.
 
-### Observation details
+### Proposed observation details (not implemented)
 
 `GET /api/v1/vessels/{vesselId}/observations/{timestamp}`
 
@@ -190,7 +187,7 @@ Aggregated points also contain `minimum`, `maximum` and `sampleCount`. Continuou
 }
 ```
 
-A valid GPS observation can have `motion: null`. This endpoint supplies the selected-point detail panel.
+A valid GPS observation could have `motion: null`. This endpoint is a possible extension for a selected-point detail panel; the delivered interface obtains its trajectory and telemetry information from the two implemented bounded-window endpoints.
 
 ## Replay synchronisation
 
@@ -207,8 +204,7 @@ The client maintains one canonical `replayTimestamp` shared by the map and chart
 
 - At most three vessels per request.
 - At most five variables per time-series request.
-- `from` and `to` must fall within the available dataset period.
-- Raw requests cover at most 31 days.
+- Raw time-series requests cover at most 31 days.
 - Longer periods use `resolution=auto` or an explicit aggregated resolution.
 - `maxPoints` is between 100 and 10,000 per vessel.
 - Unknown parameters are rejected so client mistakes remain visible.
@@ -239,13 +235,13 @@ Errors use `application/problem+json` following RFC 9457 conventions.
 - `500`: unexpected server failure.
 - `503`: database temporarily unavailable.
 
-## Caching
+## Future HTTP caching strategy
 
-- Vessel and variable metadata use long-lived caching with validation.
-- Historical trajectory and time-series results are cacheable because imports are immutable.
+- Vessel and variable metadata can use long-lived caching with validation.
+- Historical trajectory and time-series results are cacheable because imports are immutable, although the assessment implementation does not add an HTTP cache layer.
 - Cache keys include vessels, timestamps, variables, resolution and `maxPoints`.
-- ETags allow browser revalidation.
+- ETags would allow browser revalidation.
 
 ## Deferred endpoints
 
-Weather overlays, fuel and RPM estimates, edited scenarios, saved views, authentication and exports do not belong to the first implementation. The advanced-feature proposal may describe `/api/v1/scenarios`, but it should not delay the required replay workflow.
+Observation-detail lookup, weather overlays, fuel and RPM estimates, edited scenarios, saved views, authentication and exports do not belong to the first implementation. The advanced-feature proposal describes `/api/v1/scenarios`, but it does not delay the required replay workflow.

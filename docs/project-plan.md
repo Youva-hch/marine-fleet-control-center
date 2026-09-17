@@ -65,7 +65,7 @@ Only directories needed by an implemented feature should be created. Empty place
 
 ### `apps/web`
 
-Owns the React interface, MapLibre map, D3 visual encodings, filters, timeline and replay state. It does not contain SQL, CSV parsing or business rules for data validity.
+Owns the React interface, MapLibre map, SVG visual encodings, filters, timeline and replay state. It does not contain SQL, CSV parsing or business rules for data validity.
 
 Organise by user-facing feature rather than by technical file type. Components used only by the map belong in `features/map`, not in a global component directory.
 
@@ -220,7 +220,7 @@ feat(web): render colour-coded vessel trajectories
 feat(web): synchronise timeline and voyage replay
 ```
 
-- D3 time-series chart.
+- SVG time-series chart.
 - Shared replay timestamp.
 - Play, pause, seek and completion states.
 - No interpolation across missing intervals.
