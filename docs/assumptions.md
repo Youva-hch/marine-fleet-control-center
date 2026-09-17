@@ -12,10 +12,8 @@ This document records ambiguities from the assessment before implementation deci
 
 ## Decisions still to make
 
-- Whether the supplied raw CSV files may be committed or should remain local.
-- Interpretation of missing STW, RPM and fuel-consumption values.
-- Scope of historical weather integration for the first version.
-- Deployment target.
+- Deployment target and production map-tile provider.
+- Whether a later phase should implement the documented weather-provider adapters.
 
 ## Decisions made
 
@@ -24,3 +22,6 @@ This document records ambiguities from the assessment before implementation deci
 - PostgreSQL with PostGIS is the primary database. TimescaleDB is an optional scaling extension.
 - Missing numeric measurements remain `NULL`; they are not converted to zero.
 - Raw observations remain immutable. Future edited trajectories are stored as separate scenarios.
+- The supplied CSV files remain local under `data/raw/` and are excluded from Git.
+- RPM and fuel are not invented from SOG because the brief is inconsistent about STW versus SOG; they can be added later as explicitly labelled estimates.
+- Historical weather storage and retrieval are delivered as an architecture proposal rather than a live integration.
