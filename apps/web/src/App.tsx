@@ -1,4 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
+import { MapView } from './MapView.js';
+import { TelemetryChart } from './TelemetryChart.js';
 
 interface Vessel {
   id: string;
@@ -74,11 +76,7 @@ export function App() {
       </header>
 
       <section className="map-stage">
-        <div className="ocean-grid" />
-        <div className="longitude-line one" />
-        <div className="longitude-line two" />
-        <div className="mock-track track-one" />
-        <div className="mock-track track-two" />
+        <MapView vessels={selected} from={from} to={to} variable={variable} />
 
         <aside className="control-panel">
           <div className="panel-title">
@@ -174,40 +172,15 @@ export function App() {
             observations
           </span>
         </div>
-        <div className="map-tools">
-          <button type="button">＋</button>
-          <button type="button">−</button>
-          <button type="button">⌖</button>
-        </div>
-        <div className="map-prompt">
-          <i>⌁</i>
-          <strong>Charted waters</strong>
-          <span>Interactive map loading next</span>
-        </div>
-
-        <section className="timeline">
-          <div className="timeline-head">
-            <div>
-              <small>TELEMETRY</small>
-              <strong>{activeVariable?.label ?? 'Speed over ground'}</strong>
-            </div>
-            <span>{activeVariable?.unit ?? 'kn'}</span>
-          </div>
-          <div className="plot">
-            <div className="plot-grid" />
-            <svg viewBox="0 0 1000 120" preserveAspectRatio="none">
-              <path d="M0 91 C80 65 120 104 200 57 S320 28 405 74 S530 100 610 48 S735 22 800 61 S920 87 1000 40" />
-            </svg>
-            <div className="cursor" />
-          </div>
-          <div className="times">
-            <span>00:15</span>
-            <span>06:15</span>
-            <span>12:15</span>
-            <span>18:15</span>
-            <span>00:15</span>
-          </div>
-        </section>
+        <TelemetryChart
+          vessels={selected}
+          variable={variable}
+          variableLabel={activeVariable?.label ?? 'Speed over ground'}
+          unit={activeVariable?.unit ?? 'kn'}
+          from={from}
+          to={to}
+          colours={colours}
+        />
       </section>
     </main>
   );
