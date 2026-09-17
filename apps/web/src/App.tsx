@@ -9,19 +9,18 @@ interface Variable {
   id: string;
   label: string;
   unit: string;
-  category: string;
 }
 
-const vesselColours: Record<string, string> = {
-  IMO1: '#67e8f9',
-  IMO2: '#a78bfa',
+const colours: Record<string, string> = {
+  IMO1: '#38bdf8',
+  IMO2: '#c084fc',
   IMO3: '#fb7185',
 };
 
 export function App() {
   const [vessels, setVessels] = useState<Vessel[]>([]);
   const [variables, setVariables] = useState<Variable[]>([]);
-  const [selectedVessels, setSelectedVessels] = useState(['IMO1']);
+  const [selected, setSelected] = useState(['IMO1']);
   const [variable, setVariable] = useState('sogKnots');
   const [from, setFrom] = useState('2026-03-01T00:15');
   const [to, setTo] = useState('2026-03-02T00:15');
@@ -42,13 +41,13 @@ export function App() {
       .catch(() => setStatus('error'));
   }, []);
 
-  const selectedVariable = useMemo(
+  const activeVariable = useMemo(
     () => variables.find((item) => item.id === variable),
     [variable, variables],
   );
 
   function toggleVessel(id: string) {
-    setSelectedVessels((current) =>
+    setSelected((current) =>
       current.includes(id)
         ? current.filter((item) => item !== id)
         : [...current, id],
@@ -56,73 +55,78 @@ export function App() {
   }
 
   return (
-    <main className="app-shell">
-      <header className="topbar glass-panel">
-        <div className="window-lights" aria-hidden="true">
-          <span />
-          <span />
-          <span />
-        </div>
-        <div className="brand">
-          <b>MF</b>
+    <main className="control-room">
+      <header className="masthead">
+        <div className="wordmark">
+          <span>F</span>
           <div>
             <strong>Fleet Control</strong>
-            <small>Historical voyage replay</small>
+            <small>Voyage intelligence</small>
           </div>
         </div>
-        <div className="range-summary">
-          <small>Selected window</small>
-          <strong>01 Mar · 00:15 — 02 Mar · 00:15 UTC</strong>
+        <div className="system-status">
+          <i className={status} />
+          <span>{status === 'ready' ? 'Systems online' : status}</span>
         </div>
-        <button className="replay-button" type="button" disabled>
-          ▶ Replay
+        <button className="play" type="button" disabled>
+          <span>▶</span> Start replay
         </button>
       </header>
 
-      <section className="workspace">
-        <aside className="sidebar glass-panel">
-          <div className="sidebar-heading">
-            <div>
-              <p className="eyebrow">Mission controls</p>
-              <h1>Voyage explorer</h1>
-            </div>
-            <span className={`status-dot ${status}`} />
+      <section className="map-stage">
+        <div className="ocean-grid" />
+        <div className="longitude-line one" />
+        <div className="longitude-line two" />
+        <div className="mock-track track-one" />
+        <div className="mock-track track-two" />
+
+        <aside className="control-panel">
+          <div className="panel-title">
+            <p>EXPEDITION 01</p>
+            <h1>
+              North Atlantic
+              <br />
+              crossing
+            </h1>
+            <span>01–02 March 2026</span>
           </div>
 
-          <fieldset>
-            <legend>Vessels</legend>
-            <p className="field-help">Select up to three vessels</p>
-            <div className="vessel-list">
+          <section className="control-section">
+            <div className="section-label">
+              <span>Vessels</span>
+              <small>{selected.length}/3 selected</small>
+            </div>
+            <div className="vessels">
               {vessels.map((vessel) => {
-                const selected = selectedVessels.includes(vessel.id);
+                const isSelected = selected.includes(vessel.id);
                 return (
                   <button
-                    className={`vessel-option ${selected ? 'selected' : ''}`}
                     key={vessel.id}
                     type="button"
+                    className={isSelected ? 'active' : ''}
                     onClick={() => toggleVessel(vessel.id)}
                   >
-                    <span
-                      className="vessel-swatch"
-                      style={{ background: vesselColours[vessel.id] }}
-                    />
+                    <i style={{ background: colours[vessel.id] }} />
                     <span>
                       <strong>{vessel.name}</strong>
                       <small>
                         {vessel.gpsObservationCount.toLocaleString()} positions
                       </small>
                     </span>
-                    <span className="checkmark">{selected ? '✓' : ''}</span>
+                    <b>{isSelected ? '✓' : '+'}</b>
                   </button>
                 );
               })}
             </div>
-          </fieldset>
+          </section>
 
-          <fieldset>
-            <legend>Time window</legend>
+          <section className="control-section dates">
+            <div className="section-label">
+              <span>Time window</span>
+              <small>UTC</small>
+            </div>
             <label>
-              From
+              <span>From</span>
               <input
                 type="datetime-local"
                 value={from}
@@ -130,99 +134,79 @@ export function App() {
               />
             </label>
             <label>
-              To
+              <span>To</span>
               <input
                 type="datetime-local"
                 value={to}
                 onChange={(event) => setTo(event.target.value)}
               />
             </label>
-          </fieldset>
+          </section>
 
-          <fieldset>
-            <legend>Trajectory colour</legend>
-            <label>
-              Variable
-              <select
-                value={variable}
-                onChange={(event) => setVariable(event.target.value)}
-              >
-                {variables.map((item) => (
-                  <option key={item.id} value={item.id}>
-                    {item.label} · {item.unit}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <div className="legend-scale">
-              <span>Low</span>
-              <div />
-              <span>{selectedVariable?.unit ?? '—'}</span>
+          <section className="control-section">
+            <div className="section-label">
+              <span>Colour metric</span>
+              <small>{activeVariable?.unit}</small>
             </div>
-          </fieldset>
-
-          <div className="quality-note">
-            <span>◇</span>
-            <p>
-              Gaps longer than 30 minutes remain visible. Missing measurements
-              are never replaced by zero.
-            </p>
-          </div>
+            <select
+              value={variable}
+              onChange={(event) => setVariable(event.target.value)}
+            >
+              {variables.map((item) => (
+                <option key={item.id} value={item.id}>
+                  {item.label}
+                </option>
+              ))}
+            </select>
+            <div className="colour-ramp" />
+            <div className="ramp-labels">
+              <span>Low</span>
+              <span>High</span>
+            </div>
+          </section>
         </aside>
 
-        <section className="content-grid">
-          <article className="map-card glass-panel">
-            <div className="card-toolbar">
-              <div>
-                <p className="eyebrow">Global trajectory</p>
-                <h2>Fleet map</h2>
-              </div>
-              <div className="map-actions">
-                <span>{selectedVessels.length} active</span>
-                <button type="button" disabled>
-                  Fit selection
-                </button>
-              </div>
-            </div>
-            <div className="map-placeholder">
-              <div className="globe-grid" />
-              <div className="route route-a" />
-              <div className="route route-b" />
-              <div className="map-message">
-                <span>⌖</span>
-                <strong>Map surface ready</strong>
-                <p>MapLibre trajectories connect in the next step.</p>
-              </div>
-              <div className="map-stats">
-                <span>97 observations</span>
-                <span>24 hours</span>
-                <span>{selectedVariable?.label ?? 'Loading…'}</span>
-              </div>
-            </div>
-          </article>
+        <div className="map-heading">
+          <p>LIVE VIEW · HISTORICAL DATA</p>
+          <h2>Fleet trajectory</h2>
+          <span>
+            {selected.length} vessel{selected.length === 1 ? '' : 's'} · 97
+            observations
+          </span>
+        </div>
+        <div className="map-tools">
+          <button type="button">＋</button>
+          <button type="button">−</button>
+          <button type="button">⌖</button>
+        </div>
+        <div className="map-prompt">
+          <i>⌁</i>
+          <strong>Charted waters</strong>
+          <span>Interactive map loading next</span>
+        </div>
 
-          <article className="timeline-card glass-panel">
-            <div className="card-toolbar">
-              <div>
-                <p className="eyebrow">Temporal profile</p>
-                <h2>{selectedVariable?.label ?? 'Time series'}</h2>
-              </div>
-              <span className="unit-pill">{selectedVariable?.unit ?? '—'}</span>
+        <section className="timeline">
+          <div className="timeline-head">
+            <div>
+              <small>TELEMETRY</small>
+              <strong>{activeVariable?.label ?? 'Speed over ground'}</strong>
             </div>
-            <div className="chart-placeholder">
-              <div className="chart-grid" />
-              <svg viewBox="0 0 900 150" preserveAspectRatio="none">
-                <path d="M0 110 C90 80 130 125 220 70 S350 30 430 85 S560 125 650 55 S790 35 900 72" />
-              </svg>
-              <div className="axis-labels">
-                <span>00:15</span>
-                <span>06:15</span>
-                <span>12:15</span>
-                <span>18:15</span>
-                <span>00:15</span>
-              </div>
-            </div>
-          </article>
+            <span>{activeVariable?.unit ?? 'kn'}</span>
+          </div>
+          <div className="plot">
+            <div className="plot-grid" />
+            <svg viewBox="0 0 1000 120" preserveAspectRatio="none">
+              <path d="M0 91 C80 65 120 104 200 57 S320 28 405 74 S530 100 610 48 S735 22 800 61 S920 87 1000 40" />
+            </svg>
+            <div className="cursor" />
+          </div>
+          <div className="times">
+            <span>00:15</span>
+            <span>06:15</span>
+            <span>12:15</span>
+            <span>18:15</span>
+            <span>00:15</span>
+          </div>
         </section>
       </section>
     </main>
