@@ -23,6 +23,8 @@ interface Props {
   from: string;
   to: string;
   colours: Record<string, string>;
+  replayTimestamp: number;
+  onSeek: (timestamp: number) => void;
 }
 
 const utc = (value: string) =>
@@ -51,6 +53,8 @@ export function TelemetryChart({
   from,
   to,
   colours,
+  replayTimestamp,
+  onSeek,
 }: Props) {
   const [response, setResponse] = useState<Response | null>(null);
   const [hoverRatio, setHoverRatio] = useState<number | null>(null);
@@ -110,6 +114,10 @@ export function TelemetryChart({
     const maximum = values.length ? Math.max(...values) : 1;
     const span = maximum - minimum || 1;
     const duration = end - start || 1;
+    const replayRatio = Math.min(
+      1,
+      Math.max(0, (replayTimestamp - start) / duration),
+    );
 
     const paths = (response?.data ?? []).map((series) => {
       let drawing = false;
@@ -174,8 +182,9 @@ export function TelemetryChart({
       count: values.length,
       hoverTimestamp,
       hoverPoints,
+      replayRatio,
     };
-  }, [from, hoverRatio, response, to]);
+  }, [from, hoverRatio, replayTimestamp, response, to]);
 
   return (
     <section className="timeline">
@@ -222,6 +231,16 @@ export function TelemetryChart({
           );
         }}
         onPointerLeave={() => setHoverRatio(null)}
+        onClick={(event) => {
+          const bounds = event.currentTarget.getBoundingClientRect();
+          const ratio = Math.min(
+            1,
+            Math.max(0, (event.clientX - bounds.left) / bounds.width),
+          );
+          const start = new Date(`${from}:00Z`).getTime();
+          const end = new Date(`${to}:00Z`).getTime();
+          onSeek(start + (end - start) * ratio);
+        }}
       >
         <div className="plot-grid" />
         {state === 'ready' ? (
@@ -270,6 +289,14 @@ export function TelemetryChart({
             <span>{chart.minimum.toFixed(1)}</span>
           </div>
         )}
+        {state === 'ready' && (
+          <div
+            className="replay-cursor"
+            style={{ left: `${chart.replayRatio * 100}%` }}
+          >
+            <time>{formatTime(replayTimestamp, true)}</time>
+          </div>
+        )}
         {state === 'ready' &&
           hoverRatio !== null &&
           chart.hoverTimestamp !== null && (
@@ -297,6 +324,17 @@ export function TelemetryChart({
               </div>
             </>
           )}
+        <input
+          className="replay-scrubber"
+          type="range"
+          aria-label="Replay timestamp"
+          min={new Date(`${from}:00Z`).getTime()}
+          max={new Date(`${to}:00Z`).getTime()}
+          step={15 * 60 * 1000}
+          value={replayTimestamp}
+          onClick={(event) => event.stopPropagation()}
+          onChange={(event) => onSeek(Number(event.target.value))}
+        />
       </div>
       <div className="times">
         {chart.labels.map((label, index) => (

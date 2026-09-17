@@ -8,25 +8,49 @@ interface Props {
   from: string;
   to: string;
   variable: string;
+  replayTimestamp: number;
 }
 interface ApiFeature {
   geometry: { coordinates: number[][] };
-  properties: { vesselId: string; values: Array<number | null> };
+  properties: {
+    vesselId: string;
+    values: Array<number | null>;
+    timestamps: string[];
+  };
 }
 interface ApiResponse {
   features: ApiFeature[];
 }
 const utc = (value: string) =>
   new Date(`${value}:00Z`).toISOString().replace('.000Z', 'Z');
+const vesselColours: Record<string, string> = {
+  IMO1: '#38bdf8',
+  IMO2: '#c084fc',
+  IMO3: '#fb7185',
+};
 
-export function MapView({ vessels, from, to, variable }: Props) {
+interface ReplayTrack {
+  vesselId: string;
+  coordinates: number[][];
+  timestamps: number[];
+}
+
+export function MapView({
+  vessels,
+  from,
+  to,
+  variable,
+  replayTimestamp,
+}: Props) {
   const container = useRef<HTMLDivElement>(null);
   const map = useRef<MapLibreMap | null>(null);
+  const replayTracks = useRef<ReplayTrack[]>([]);
   const [ready, setReady] = useState(false);
   const [state, setState] = useState<'loading' | 'ready' | 'empty' | 'error'>(
     'loading',
   );
   const [pointCount, setPointCount] = useState(0);
+  const [trajectoryRevision, setTrajectoryRevision] = useState(0);
 
   useEffect(() => {
     if (!container.current || map.current) return;
@@ -124,6 +148,32 @@ export function MapView({ vessels, from, to, variable }: Props) {
           'line-opacity': 0.95,
         },
       });
+      instance.addSource('replay-markers', {
+        type: 'geojson',
+        data: { type: 'FeatureCollection', features: [] },
+      });
+      instance.addLayer({
+        id: 'replay-pulse',
+        type: 'circle',
+        source: 'replay-markers',
+        paint: {
+          'circle-radius': 13,
+          'circle-color': ['get', 'colour'],
+          'circle-opacity': 0.22,
+          'circle-blur': 0.35,
+        },
+      });
+      instance.addLayer({
+        id: 'replay-position',
+        type: 'circle',
+        source: 'replay-markers',
+        paint: {
+          'circle-radius': 6,
+          'circle-color': ['get', 'colour'],
+          'circle-stroke-color': '#ffffff',
+          'circle-stroke-width': 2,
+        },
+      });
       setReady(true);
     });
     map.current = instance;
@@ -138,6 +188,8 @@ export function MapView({ vessels, from, to, variable }: Props) {
     const source = map.current.getSource('trajectories') as GeoJSONSource;
     if (!vessels.length) {
       source.setData({ type: 'FeatureCollection', features: [] });
+      replayTracks.current = [];
+      setTrajectoryRevision((revision) => revision + 1);
       setState('empty');
       return;
     }
@@ -155,6 +207,14 @@ export function MapView({ vessels, from, to, variable }: Props) {
         return response.json() as Promise<ApiResponse>;
       })
       .then((data) => {
+        replayTracks.current = data.features.map((feature) => ({
+          vesselId: feature.properties.vesselId,
+          coordinates: feature.geometry.coordinates,
+          timestamps: feature.properties.timestamps.map((timestamp) =>
+            new Date(timestamp).getTime(),
+          ),
+        }));
+        setTrajectoryRevision((revision) => revision + 1);
         const values = data.features
           .flatMap((feature) => feature.properties.values)
           .filter((value): value is number => value !== null);
@@ -211,6 +271,49 @@ export function MapView({ vessels, from, to, variable }: Props) {
       });
     return () => controller.abort();
   }, [from, ready, to, variable, vessels]);
+
+  useEffect(() => {
+    if (!ready || !map.current) return;
+    const source = map.current.getSource('replay-markers') as GeoJSONSource;
+    const positions = new Map<string, [number, number]>();
+
+    for (const track of replayTracks.current) {
+      const first = track.timestamps[0];
+      const last = track.timestamps.at(-1);
+      if (first === undefined || last === undefined) continue;
+      if (replayTimestamp < first || replayTimestamp > last) continue;
+
+      let low = 0;
+      let high = track.timestamps.length - 1;
+      while (low < high) {
+        const middle = Math.ceil((low + high) / 2);
+        if (track.timestamps[middle]! <= replayTimestamp) low = middle;
+        else high = middle - 1;
+      }
+      const nextIndex = Math.min(low + 1, track.timestamps.length - 1);
+      const startTime = track.timestamps[low]!;
+      const endTime = track.timestamps[nextIndex]!;
+      const ratio =
+        endTime === startTime
+          ? 0
+          : (replayTimestamp - startTime) / (endTime - startTime);
+      const startCoordinate = track.coordinates[low]!;
+      const endCoordinate = track.coordinates[nextIndex]!;
+      positions.set(track.vesselId, [
+        startCoordinate[0]! + (endCoordinate[0]! - startCoordinate[0]!) * ratio,
+        startCoordinate[1]! + (endCoordinate[1]! - startCoordinate[1]!) * ratio,
+      ]);
+    }
+
+    source.setData({
+      type: 'FeatureCollection',
+      features: [...positions.entries()].map(([vesselId, coordinates]) => ({
+        type: 'Feature' as const,
+        geometry: { type: 'Point' as const, coordinates },
+        properties: { vesselId, colour: vesselColours[vesselId] },
+      })),
+    });
+  }, [ready, replayTimestamp, trajectoryRevision]);
 
   return (
     <div className="map-container">

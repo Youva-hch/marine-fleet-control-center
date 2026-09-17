@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { MapView } from './MapView.js';
 import { TelemetryChart } from './TelemetryChart.js';
 
@@ -18,6 +18,7 @@ const colours: Record<string, string> = {
   IMO2: '#c084fc',
   IMO3: '#fb7185',
 };
+const REPLAY_DURATION_MS = 30_000;
 
 export function App() {
   const [vessels, setVessels] = useState<Vessel[]>([]);
@@ -29,6 +30,49 @@ export function App() {
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>(
     'loading',
   );
+  const replayRange = useMemo(
+    () => ({
+      start: new Date(`${from}:00Z`).getTime(),
+      end: new Date(`${to}:00Z`).getTime(),
+    }),
+    [from, to],
+  );
+  const [replayTimestamp, setReplayTimestamp] = useState(replayRange.start);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const replayTimestampRef = useRef(replayTimestamp);
+
+  useEffect(() => {
+    replayTimestampRef.current = replayTimestamp;
+  }, [replayTimestamp]);
+
+  useEffect(() => {
+    setIsPlaying(false);
+    setReplayTimestamp(replayRange.start);
+  }, [replayRange.start, replayRange.end, selected, variable]);
+
+  useEffect(() => {
+    if (!isPlaying || replayRange.end <= replayRange.start) return;
+    let frame = 0;
+    let previous = performance.now();
+    const advance = (now: number) => {
+      const elapsed = now - previous;
+      previous = now;
+      const timePerMillisecond =
+        (replayRange.end - replayRange.start) / REPLAY_DURATION_MS;
+      const next = replayTimestampRef.current + elapsed * timePerMillisecond;
+      if (next >= replayRange.end) {
+        replayTimestampRef.current = replayRange.end;
+        setReplayTimestamp(replayRange.end);
+        setIsPlaying(false);
+        return;
+      }
+      replayTimestampRef.current = next;
+      setReplayTimestamp(next);
+      frame = requestAnimationFrame(advance);
+    };
+    frame = requestAnimationFrame(advance);
+    return () => cancelAnimationFrame(frame);
+  }, [isPlaying, replayRange.end, replayRange.start]);
 
   useEffect(() => {
     Promise.all([
@@ -70,13 +114,35 @@ export function App() {
           <i className={status} />
           <span>{status === 'ready' ? 'Systems online' : status}</span>
         </div>
-        <button className="play" type="button" disabled>
-          <span>▶</span> Start replay
+        <button
+          className={`play ${isPlaying ? 'active' : ''}`}
+          type="button"
+          disabled={!selected.length || replayRange.end <= replayRange.start}
+          onClick={() => {
+            if (isPlaying) {
+              setIsPlaying(false);
+              return;
+            }
+            if (replayTimestamp >= replayRange.end) {
+              replayTimestampRef.current = replayRange.start;
+              setReplayTimestamp(replayRange.start);
+            }
+            setIsPlaying(true);
+          }}
+        >
+          <span>{isPlaying ? 'Ⅱ' : '▶'}</span>{' '}
+          {isPlaying ? 'Pause replay' : 'Start replay'}
         </button>
       </header>
 
       <section className="map-stage">
-        <MapView vessels={selected} from={from} to={to} variable={variable} />
+        <MapView
+          vessels={selected}
+          from={from}
+          to={to}
+          variable={variable}
+          replayTimestamp={replayTimestamp}
+        />
 
         <aside className="control-panel">
           <div className="panel-title">
@@ -180,6 +246,11 @@ export function App() {
           from={from}
           to={to}
           colours={colours}
+          replayTimestamp={replayTimestamp}
+          onSeek={(timestamp) => {
+            setIsPlaying(false);
+            setReplayTimestamp(timestamp);
+          }}
         />
       </section>
     </main>
