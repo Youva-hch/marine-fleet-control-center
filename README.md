@@ -75,6 +75,11 @@ data/                  Dataset instructions (raw files excluded from Git)
 - [`docs/waypoint-editing-proposal.md`](docs/waypoint-editing-proposal.md): advanced draggable-waypoint feature proposal.
 - [`docs/assumptions.md`](docs/assumptions.md): ambiguities in the brief and explicit decisions.
 - [`docs/data-audit.md`](docs/data-audit.md): supplied-file audit and reconciled observation counts.
+- [`docs/submission-checklist.md`](docs/submission-checklist.md): final automated and manual delivery checks.
+
+## Continuous integration
+
+GitHub Actions checks formatting, linting, type safety, production builds and every test that does not depend on the private CSV files. Database-backed API integration tests remain part of the documented local verification because their expected observations come from the supplied dataset.
 
 ## Important implementation decisions
 
