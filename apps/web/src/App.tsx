@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { MapView } from './MapView.js';
 import { TelemetryChart } from './TelemetryChart.js';
+import { toggleTelemetrySelection } from './telemetry-selection.js';
 
 interface Vessel {
   id: string;
@@ -109,14 +110,7 @@ export function App() {
   }
 
   function toggleTelemetryVariable(id: string) {
-    setTelemetryVariables((current) => {
-      if (current.includes(id)) {
-        return current.length === 1
-          ? current
-          : current.filter((item) => item !== id);
-      }
-      return current.length >= 3 ? current : [...current, id];
-    });
+    setTelemetryVariables((current) => toggleTelemetrySelection(current, id));
   }
 
   return (

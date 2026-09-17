@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import * as maplibregl from 'maplibre-gl';
 import type { GeoJSONSource, Map as MapLibreMap } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
+import { locateReplayPositions, type ReplayTrack } from './replay.js';
 
 interface Props {
   vessels: string[];
@@ -28,12 +29,6 @@ const vesselColours: Record<string, string> = {
   IMO2: '#c084fc',
   IMO3: '#fb7185',
 };
-
-interface ReplayTrack {
-  vesselId: string;
-  coordinates: number[][];
-  timestamps: number[];
-}
 
 export function MapView({
   vessels,
@@ -275,39 +270,14 @@ export function MapView({
   useEffect(() => {
     if (!ready || !map.current) return;
     const source = map.current.getSource('replay-markers') as GeoJSONSource;
-    const positions = new Map<string, [number, number]>();
-
-    for (const track of replayTracks.current) {
-      const first = track.timestamps[0];
-      const last = track.timestamps.at(-1);
-      if (first === undefined || last === undefined) continue;
-      if (replayTimestamp < first || replayTimestamp > last) continue;
-
-      let low = 0;
-      let high = track.timestamps.length - 1;
-      while (low < high) {
-        const middle = Math.ceil((low + high) / 2);
-        if (track.timestamps[middle]! <= replayTimestamp) low = middle;
-        else high = middle - 1;
-      }
-      const nextIndex = Math.min(low + 1, track.timestamps.length - 1);
-      const startTime = track.timestamps[low]!;
-      const endTime = track.timestamps[nextIndex]!;
-      const ratio =
-        endTime === startTime
-          ? 0
-          : (replayTimestamp - startTime) / (endTime - startTime);
-      const startCoordinate = track.coordinates[low]!;
-      const endCoordinate = track.coordinates[nextIndex]!;
-      positions.set(track.vesselId, [
-        startCoordinate[0]! + (endCoordinate[0]! - startCoordinate[0]!) * ratio,
-        startCoordinate[1]! + (endCoordinate[1]! - startCoordinate[1]!) * ratio,
-      ]);
-    }
+    const positions = locateReplayPositions(
+      replayTracks.current,
+      replayTimestamp,
+    );
 
     source.setData({
       type: 'FeatureCollection',
-      features: [...positions.entries()].map(([vesselId, coordinates]) => ({
+      features: positions.map(({ vesselId, coordinates }) => ({
         type: 'Feature' as const,
         geometry: { type: 'Point' as const, coordinates },
         properties: { vesselId, colour: vesselColours[vesselId] },
