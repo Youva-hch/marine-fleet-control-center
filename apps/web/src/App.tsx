@@ -11,6 +11,7 @@ interface Variable {
   id: string;
   label: string;
   unit: string;
+  supportsTimeSeries: boolean;
 }
 
 const colours: Record<string, string> = {
@@ -25,6 +26,7 @@ export function App() {
   const [variables, setVariables] = useState<Variable[]>([]);
   const [selected, setSelected] = useState(['IMO1']);
   const [variable, setVariable] = useState('sogKnots');
+  const [telemetryVariables, setTelemetryVariables] = useState(['sogKnots']);
   const [from, setFrom] = useState('2026-03-01T00:15');
   const [to, setTo] = useState('2026-03-02T00:15');
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>(
@@ -48,7 +50,13 @@ export function App() {
   useEffect(() => {
     setIsPlaying(false);
     setReplayTimestamp(replayRange.start);
-  }, [replayRange.start, replayRange.end, selected, variable]);
+  }, [
+    replayRange.start,
+    replayRange.end,
+    selected,
+    telemetryVariables,
+    variable,
+  ]);
 
   useEffect(() => {
     if (!isPlaying || replayRange.end <= replayRange.start) return;
@@ -98,6 +106,17 @@ export function App() {
         ? current.filter((item) => item !== id)
         : [...current, id],
     );
+  }
+
+  function toggleTelemetryVariable(id: string) {
+    setTelemetryVariables((current) => {
+      if (current.includes(id)) {
+        return current.length === 1
+          ? current
+          : current.filter((item) => item !== id);
+      }
+      return current.length >= 3 ? current : [...current, id];
+    });
   }
 
   return (
@@ -228,6 +247,40 @@ export function App() {
               <span>High</span>
             </div>
           </section>
+
+          <section className="control-section">
+            <div className="section-label">
+              <span>Telemetry</span>
+              <small>{telemetryVariables.length}/3 metrics</small>
+            </div>
+            <details className="metric-picker">
+              <summary>
+                {telemetryVariables.length === 1
+                  ? variables.find((item) => item.id === telemetryVariables[0])
+                      ?.label
+                  : `${telemetryVariables.length} metrics selected`}
+              </summary>
+              <div className="metric-options">
+                {variables
+                  .filter((item) => item.supportsTimeSeries)
+                  .map((item) => {
+                    const checked = telemetryVariables.includes(item.id);
+                    return (
+                      <label key={item.id}>
+                        <input
+                          type="checkbox"
+                          checked={checked}
+                          disabled={!checked && telemetryVariables.length >= 3}
+                          onChange={() => toggleTelemetryVariable(item.id)}
+                        />
+                        <span>{item.label}</span>
+                        <small>{item.unit}</small>
+                      </label>
+                    );
+                  })}
+              </div>
+            </details>
+          </section>
         </aside>
 
         <div className="map-heading">
@@ -238,20 +291,32 @@ export function App() {
             observations
           </span>
         </div>
-        <TelemetryChart
-          vessels={selected}
-          variable={variable}
-          variableLabel={activeVariable?.label ?? 'Speed over ground'}
-          unit={activeVariable?.unit ?? 'kn'}
-          from={from}
-          to={to}
-          colours={colours}
-          replayTimestamp={replayTimestamp}
-          onSeek={(timestamp) => {
-            setIsPlaying(false);
-            setReplayTimestamp(timestamp);
-          }}
-        />
+        <section className="timeline">
+          <div className="telemetry-deck">
+            {telemetryVariables.map((telemetryVariable) => {
+              const metadata = variables.find(
+                (item) => item.id === telemetryVariable,
+              );
+              return (
+                <TelemetryChart
+                  key={telemetryVariable}
+                  vessels={selected}
+                  variable={telemetryVariable}
+                  variableLabel={metadata?.label ?? telemetryVariable}
+                  unit={metadata?.unit ?? ''}
+                  from={from}
+                  to={to}
+                  colours={colours}
+                  replayTimestamp={replayTimestamp}
+                  onSeek={(timestamp) => {
+                    setIsPlaying(false);
+                    setReplayTimestamp(timestamp);
+                  }}
+                />
+              );
+            })}
+          </div>
+        </section>
       </section>
     </main>
   );

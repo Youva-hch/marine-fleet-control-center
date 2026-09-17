@@ -24,6 +24,71 @@ input,
 select {
   font: inherit;
 }
+.metric-picker {
+  position: relative;
+}
+.metric-picker summary {
+  padding: 9px 30px 9px 10px;
+  overflow: hidden;
+  border: 1px solid #ffffff12;
+  border-radius: 9px;
+  background: #050708;
+  color: #dfe3e5;
+  font-size: 10px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
+  list-style: none;
+}
+.metric-picker summary::-webkit-details-marker {
+  display: none;
+}
+.metric-picker summary::after {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  color: #778187;
+  content: '⌄';
+}
+.metric-options {
+  position: absolute;
+  z-index: 20;
+  right: 0;
+  left: 0;
+  max-height: 210px;
+  margin-top: 6px;
+  overflow: auto;
+  padding: 6px;
+  border: 1px solid #ffffff18;
+  border-radius: 11px;
+  background: #080b0df5;
+  box-shadow: 0 18px 38px #000a;
+  backdrop-filter: blur(18px);
+}
+.metric-options label {
+  display: grid;
+  grid-template-columns: 15px 1fr auto;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 6px;
+  border-radius: 7px;
+  color: #b8c0c4;
+  font-size: 9px;
+  cursor: pointer;
+}
+.metric-options label:hover {
+  background: #ffffff0a;
+}
+.metric-options input {
+  width: 13px;
+  height: 13px;
+  margin: 0;
+  padding: 0;
+  accent-color: #38bdf8;
+}
+.metric-options small {
+  color: #657076;
+}
 button {
   color: inherit;
 }
@@ -398,12 +463,38 @@ select {
   bottom: 20px;
   left: 334px;
   height: 174px;
-  padding: 18px 22px 12px;
+  padding: 0;
   border: 1px solid #ffffff12;
   border-radius: 17px;
   background: #0a0d0fee;
   box-shadow: 0 20px 60px #00000073;
   backdrop-filter: blur(22px);
+}
+.telemetry-deck {
+  display: grid;
+  grid-auto-columns: minmax(280px, 1fr);
+  grid-auto-flow: column;
+  height: 100%;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+.telemetry-card {
+  min-width: 0;
+  padding: 18px 20px 12px;
+  overflow: hidden;
+}
+.telemetry-card + .telemetry-card {
+  border-left: 1px solid #ffffff12;
+}
+.telemetry-card .timeline-head em {
+  display: none;
+}
+.telemetry-card .telemetry-legend {
+  gap: 6px !important;
+  margin-right: 8px;
+}
+.telemetry-card .telemetry-legend i {
+  width: 12px;
 }
 .timeline-head {
   display: flex;
@@ -631,8 +722,6 @@ select {
   }
   .timeline {
     left: 290px;
-    padding-right: 16px;
-    padding-left: 16px;
   }
   .timeline-head em {
     display: none;
@@ -684,7 +773,7 @@ select {
     grid-row: 3;
     width: 100%;
     height: 210px;
-    padding: 16px;
+    padding: 0;
   }
   .map-tools {
     top: 570px;
@@ -692,6 +781,9 @@ select {
   .timeline-head {
     flex-wrap: wrap;
     row-gap: 9px;
+  }
+  .telemetry-deck {
+    grid-auto-columns: minmax(290px, 88vw);
   }
   .timeline-head > div:first-child {
     width: calc(100% - 30px);

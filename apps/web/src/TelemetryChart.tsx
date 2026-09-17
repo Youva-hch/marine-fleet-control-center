@@ -187,7 +187,7 @@ export function TelemetryChart({
   }, [from, hoverRatio, replayTimestamp, response, to]);
 
   return (
-    <section className="timeline">
+    <article className="telemetry-card">
       <div className="timeline-head">
         <div>
           <small>TELEMETRY</small>
@@ -341,6 +341,6 @@ export function TelemetryChart({
           <span key={`${label}-${index}`}>{label}</span>
         ))}
       </div>
-    </section>
+    </article>
   );
 }
