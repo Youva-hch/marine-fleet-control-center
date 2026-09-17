@@ -129,11 +129,6 @@ describe('metadata API', () => {
       400,
     ],
     [
-      'a range over 31 days',
-      'vessels=IMO1&from=2026-03-01T00:15:00Z&to=2026-04-02T00:15:00Z',
-      422,
-    ],
-    [
       'an unsupported variable',
       'vessels=IMO1&from=2026-03-01T00:15:00Z&to=2026-03-02T00:15:00Z&colourBy=unknown',
       422,
@@ -164,6 +159,24 @@ describe('metadata API', () => {
         colourBy: 'sogKnots',
         gapThresholdMinutes: 30,
         downsampled: false,
+      },
+    });
+    expect(response.json().features.length).toBeGreaterThan(0);
+  });
+
+  it('supports a long trajectory window through downsampling', async () => {
+    const response = await app.inject({
+      method: 'GET',
+      url: '/api/v1/trajectories?vessels=IMO1&from=2026-03-01T00:15:00Z&to=2026-05-01T00:15:00Z&colourBy=sogKnots&maxPoints=100',
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(response.headers['content-type']).toContain('application/geo+json');
+    expect(response.json()).toMatchObject({
+      type: 'FeatureCollection',
+      metadata: {
+        colourBy: 'sogKnots',
+        downsampled: true,
       },
     });
     expect(response.json().features.length).toBeGreaterThan(0);

@@ -19,7 +19,6 @@ const KNOWN_VESSELS = new Set(['IMO1', 'IMO2', 'IMO3']);
 const KNOWN_VARIABLES = new Set(
   VARIABLE_CATALOG.map((variable) => variable.id),
 );
-const MAX_RAW_RANGE_MS = 31 * 24 * 60 * 60 * 1000;
 const UTC_TIMESTAMP = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?Z$/;
 
 function parseUtcTimestamp(value: string): Date | null {
@@ -77,15 +76,6 @@ export function validateTrajectoryQuery(
       field: 'to',
       code: 'after_from',
       detail: "The 'to' timestamp must be later than the 'from' timestamp.",
-    };
-  }
-
-  if (to.getTime() - from.getTime() > MAX_RAW_RANGE_MS) {
-    return {
-      status: 422,
-      field: 'to',
-      code: 'raw_range_too_large',
-      detail: 'Raw trajectory requests may cover at most 31 days.',
     };
   }
 
